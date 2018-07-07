@@ -1,0 +1,3 @@
+enable_dhcp: true
+external_network_name: ext-net
+external_subnet_name: ext-subnet

@@ -1,0 +1,14 @@
+---
+
+os_auth_url: http://192.168.1.2:35357/v3
+os_user: admin
+os_password: admin
+os_project: admin
+
+os_auth: {
+  auth_url: "{{ os_auth_url }}",
+  username: "{{ os_user }}",
+  password: "{{ os_password }}",
+  domain_name: "default",
+  project_name: "{{ os_project }}"
+}

@@ -1,0 +1,98 @@
+---
+
+- include_role:
+    name: network_create
+  vars:
+    network_name: n1
+    subnet_name: s1
+    router_name: r1
+    cidr: 10.0.0.0/24
+    gateway_ip: 10.0.0.1
+
+- os_image:
+    auth: "{{ os_auth }}"
+    name: cirros001
+    container_format: bare
+    disk_format: qcow2
+    state: present
+    filename: "images/cirros.img"
+
+- os_flavor_facts:
+    ram: "MIN"
+    limit: 1
+    auth: "{{ os_auth }}"
+  register: out
+
+- os_nova_flavor:
+    auth: "{{ os_auth }}"
+    state: present
+    name: "{{ item.name }}"
+    ram: "{{ item.ram }}"
+    vcpus: "{{ item.vcpus }}"
+    disk: "{{ item.disk }}"
+    ephemeral: "{{ item.ephemeral }}"
+  with_items:
+    - { name: 'cpu1', ram: 4096, vcpus: 1, disk: 30, ephemeral: 0 }
+
+- os_network:
+    auth: "{{ os_auth }}"
+    state: present
+    name: ext_net
+    external: true
+    provider_physical_network: "physnet1"
+    provider_network_type: "flat"
+
+- os_subnet:
+    auth: "{{ os_auth }}"
+    state: present
+    network_name: ext_net
+    name: ext-subnet
+    allocation_pool_start: 172.22.13.100
+    allocation_pool_end: 172.22.13.200
+    enable_dhcp: false
+    gateway_ip: 172.22.13.254
+    cidr: 172.22.13.0/24
+
+- os_network:
+    auth: "{{ os_auth }}"
+    state: present
+    name: n1
+
+- os_subnet:
+    auth: "{{ os_auth }}"
+    state: present
+    network_name: n1
+    name: s1
+    enable_dhcp: true
+    gateway_ip: 10.0.0.1
+    cidr: 10.0.0.0/24
+    dns_nameservers:
+      - 8.8.8.8
+
+- os_router:
+    auth: "{{ os_auth }}"
+    state: present
+    name: r1
+    network: ext-net
+    external_fixed_ips:
+      - subnet: ext-subnet
+    interfaces:
+      - s1
+
+- os_keypair:
+    auth: "{{ os_auth }}"
+    state: present
+    name: my
+    public_key: "{{ lookup('file','~/.ssh/id_rsa.pub') }}"
+
+
+- os_security_group_rule:
+    auth: "{{ os_auth }}"
+    security_group: default
+    protocol: "{{ item }}"
+    remote_ip_prefix: 0.0.0.0/0
+  with_items:
+    - tcp
+    - udp
+    - icmp
+

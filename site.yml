@@ -1,0 +1,8 @@
+---
+
+- hosts: local
+  vars:
+    action: init
+  roles:
+    - "{{ action }}"
+

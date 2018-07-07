@@ -1,0 +1,27 @@
+---
+
+- os_network:
+    auth: "{{ os_auth }}"
+    state: present
+    name: "{{ network_name }}"
+
+- os_subnet:
+    auth: "{{ os_auth }}"
+    state: present
+    network_name: "{{ network_name }}"
+    name: "{{ subnet_name }}"
+    enable_dhcp: "{{ enable_dhcp }}"
+    gateway_ip: "{{ gateway_ip }}"
+    cidr: "{{ cidr }}"
+    dns_nameservers:
+      - 8.8.8.8
+
+- os_router:
+    auth: "{{ os_auth }}"
+    state: present
+    name: "{{ router_name }}"
+    network: "{{ external_network_name }}"
+    external_fixed_ips:
+      - subnet: "{{ external_subnet_name }}"
+    interfaces:
+      - "{{ subnet_name }}"
